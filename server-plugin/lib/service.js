@@ -1,6 +1,6 @@
 const path=require('path');
 const { normalizeRelativePath,statPath,listDirectory,readFile,writeFile,appendFile,deleteFile,moveFile,copyFile,walkFiles,fileStat }=require('./vault');
-const { readTarget,patchV2,legacyPatch,projectMap,legacyDocumentMap,parseFrontmatter }=require('./markdown');
+const { readTarget,patchV2,legacyPatch,projectMap,legacyDocumentMap,parseFrontmatter }=require('./markdown-compat');
 const { metadataForFile,simpleSearch,structuredSearch,tagCounts,buildFileIndex,buildBacklinks }=require('./search');
 const { lookup,isTextMime }=require('./mime');
 const { apiError,statusError,ERROR_CODES }=require('./errors');

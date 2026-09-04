@@ -1,5 +1,5 @@
 const test=require('node:test');const assert=require('node:assert/strict');const crypto=require('crypto');
-const md=require('../server-plugin/lib/markdown');
+const md=require('../server-plugin/lib/markdown-compat');
 const DUP=md.DUPLICATE_MARKER;
 
 test('document map matches sha256 six-character version and nested headings',()=>{const doc='---\nstatus: todo\n---\n# A\nbody\n## B\nx\n';const map=md.projectMap(doc);assert.equal(map.version,crypto.createHash('sha256').update(doc).digest('hex').slice(0,6));assert.deepEqual(map.frontmatterFields,['status']);assert.deepEqual(Object.keys(map.headings),['A']);assert.deepEqual(Object.keys(map.headings.A),['B']);});
