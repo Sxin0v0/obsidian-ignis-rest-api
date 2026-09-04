@@ -1,0 +1,24 @@
+services:
+  ignis:
+    image: nobbe/ignis:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - IGNIS_LOCAL_REST_API_KEY=YOUR_API_KEY
+      # Optional when several vaults enable the plugin:
+      # - IGNIS_LOCAL_REST_API_DEFAULT_VAULT=YOUR_VAULT_ID
+      # Optional:
+      # - IGNIS_LOCAL_REST_API_CORS_ORIGIN=https://client.example.com
+      # - IGNIS_LOCAL_REST_API_VERBOSE=true
+      # - IGNIS_LOCAL_REST_API_BRIDGE_TIMEOUT_MS=5000
+    volumes:
+      - ./vaults:/vaults
+      - ./data:/app/data
+      - obsidian-app:/app/obsidian-app
+      - ./server-plugin:/app/apps/ignis-server/server/plugins/local-rest-api:ro
+    restart: unless-stopped
+
+volumes:
+  obsidian-app:

@@ -1,0 +1,22 @@
+name: Feature request
+description: Propose an improvement to the community Ignis adaptation.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: upstream
+    attributes:
+      label: Upstream relationship
+      description: If this mirrors an upstream feature, link the upstream documentation or change.

@@ -1,0 +1,36 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Dependencies and build output
+node_modules/
+dist/
+# This prebuilt browser companion is required by Ignis at runtime and has no separate build tool in this repository.
+!server-plugin/obsidian/dist/
+!server-plugin/obsidian/dist/**
+build/
+coverage/
+release/
+
+# Logs and temporary files
+*.log
+logs/
+.cache/
+tmp/
+temp/
+*.bak
+*.old
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Python tooling (occasionally used for release maintenance)
+__pycache__/
+*.pyc

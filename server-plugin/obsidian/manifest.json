@@ -1,0 +1,9 @@
+{
+  "id": "obsidian-local-rest-api",
+  "name": "Obsidian Ignis REST API with MCP",
+  "version": "1.0.0",
+  "minAppVersion": "1.12.4",
+  "description": "Browser companion for the Obsidian Ignis REST API server-side port. Provides active-file, command, rendering, metadata, and extension APIs.",
+  "author": "Sxin0v0 & GPT (AI-assisted migration); upstream by Adam Coddington",
+  "isDesktopOnly": false
+}

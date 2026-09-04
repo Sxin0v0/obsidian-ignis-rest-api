@@ -1,0 +1,151 @@
+openapi: 3.1.0
+info:
+  title: Obsidian Ignis REST API with MCP
+  version: 1.0.0
+  description: |
+    Ignis server-side migration of coddingtonbear/obsidian-local-rest-api 5.1.
+    The API is mounted below /api/ext/local-rest-api. TLS is terminated by Ignis
+    or its reverse proxy rather than by the Obsidian plugin.
+servers:
+  - url: /api/ext/local-rest-api
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  parameters:
+    Vault:
+      name: X-Ignis-Vault
+      in: header
+      required: false
+      schema: { type: string }
+      description: Required only when multiple Ignis vaults are enabled and no default vault is configured.
+    PatchVersion:
+      name: Markdown-Patch-Version
+      in: header
+      required: false
+      schema: { type: string, enum: ['1','2'], default: '2' }
+  schemas:
+    Error:
+      type: object
+      properties:
+        message: { type: string }
+        errorCode: { type: integer }
+    PatchInstruction:
+      type: object
+      required: [targetType, target, operation]
+      properties:
+        targetType: { type: string, enum: [heading, block, frontmatter] }
+        target: {}
+        operation: { type: string, enum: [replace, prepend, append, delete] }
+        scope: { type: string, enum: [content, marker, markerAndContent, parent], default: content }
+        within: { type: integer }
+        content: { type: string }
+        value: {}
+        destination: { type: object }
+        ifMatch: { type: string }
+        createTargetIfMissing: { type: boolean }
+        rejectIfContentPreexists: { type: boolean }
+paths:
+  /:
+    get:
+      security: []
+      summary: Server status and authentication check
+      responses: { '200': { description: OK } }
+  /openapi.yaml:
+    get:
+      security: []
+      summary: This OpenAPI document
+      responses: { '200': { description: OpenAPI YAML } }
+  /obsidian-local-rest-api.crt:
+    get:
+      security: []
+      summary: Compatibility endpoint; returns 410 because Ignis owns TLS
+      responses: { '410': { description: TLS is managed externally } }
+  /vaults:
+    get:
+      summary: List vaults enabled for this server plugin
+      responses: { '200': { description: Vault list } }
+  /vault/{path}:
+    parameters:
+      - $ref: '#/components/parameters/Vault'
+      - name: path
+        in: path
+        required: true
+        schema: { type: string }
+        description: Vault-relative file/directory path. Append /heading/... /block/... or /frontmatter/... for path-element targeting.
+    get:
+      summary: List a directory, read a file, note metadata, document map, or targeted section
+      parameters:
+        - $ref: '#/components/parameters/PatchVersion'
+      responses: { '200': { description: File, directory listing, metadata, map, or target } }
+    put:
+      summary: Create/replace a file or path-targeted section
+      requestBody: { required: true, content: { 'application/octet-stream': { schema: { type: string, format: binary } }, 'text/markdown': { schema: { type: string } }, 'application/json': { schema: {} } } }
+      responses: { '204': { description: Whole-file write succeeded }, '200': { description: Targeted write returns patched document } }
+    post:
+      summary: Append text to a file or targeted section
+      responses: { '204': { description: Whole-file append succeeded }, '200': { description: Targeted append returns patched document } }
+    patch:
+      summary: Markdown-patch v2 by default; v1 header-driven format remains available
+      parameters:
+        - $ref: '#/components/parameters/PatchVersion'
+      requestBody:
+        content:
+          application/json: { schema: { $ref: '#/components/schemas/PatchInstruction' } }
+          application/vnd.olrapi.patch-instruction+json: { schema: { $ref: '#/components/schemas/PatchInstruction' } }
+          text/markdown: { schema: { type: string } }
+      responses: { '200': { description: Patched Markdown document } }
+    delete:
+      summary: Trash or permanently delete a whole file
+      parameters:
+        - name: permanent
+          in: query
+          schema: { type: boolean, default: false }
+      responses: { '204': { description: Deleted } }
+  /active/{target}:
+    parameters:
+      - $ref: '#/components/parameters/Vault'
+      - name: target
+        in: path
+        required: false
+        schema: { type: string }
+    get: { summary: Read the active file or a target within it, responses: { '200': { description: OK } } }
+    put: { summary: Replace the active file or target, responses: { '204': { description: Whole-file OK }, '200': { description: Targeted OK } } }
+    post: { summary: Append to the active file or target, responses: { '204': { description: Whole-file OK }, '200': { description: Targeted OK } } }
+    patch: { summary: Patch the active file, responses: { '200': { description: Patched Markdown } } }
+    delete: { summary: Delete the active file, responses: { '204': { description: Deleted } } }
+  /tags/:
+    get: { summary: List tags and usage counts, responses: { '200': { description: Tag list } } }
+  /commands/:
+    get: { summary: List Obsidian commands, responses: { '200': { description: Command list } } }
+  /commands/{commandId}/:
+    post:
+      summary: Execute an Obsidian command
+      parameters: [{ name: commandId, in: path, required: true, schema: { type: string } }]
+      responses: { '204': { description: Executed } }
+  /search/simple/:
+    post:
+      summary: Obsidian simple search
+      parameters:
+        - { name: query, in: query, required: true, schema: { type: string } }
+        - { name: contextLength, in: query, schema: { type: number, default: 100 } }
+      responses: { '200': { description: Search results } }
+  /search/:
+    post:
+      summary: JsonLogic search over note metadata
+      requestBody: { required: true, content: { 'application/vnd.olrapi.jsonlogic+json': { schema: {} }, 'application/json': { schema: {} } } }
+      responses: { '200': { description: Search results } }
+  /open/{path}:
+    post:
+      summary: Open a file in an Ignis Obsidian browser tab
+      parameters:
+        - { name: path, in: path, required: true, schema: { type: string } }
+        - { name: newLeaf, in: query, schema: { type: boolean } }
+      responses: { '204': { description: Opened } }
+  /mcp/:
+    get: { summary: MCP Streamable HTTP SSE receive stream, responses: { '200': { description: text/event-stream } } }
+    post: { summary: MCP JSON-RPC / Streamable HTTP endpoint, responses: { '200': { description: JSON-RPC response }, '202': { description: Notification accepted } } }
+    delete: { summary: Close MCP session, responses: { '204': { description: Closed } } }

@@ -1,0 +1,17 @@
+{
+  "name": "obsidian-ignis-rest-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Community-maintained Ignis Server Plugin adaptation of Obsidian Local REST API with REST and MCP.",
+  "author": "Sxin0v0 & GPT (AI-assisted migration)",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "find server-plugin tests scripts -name '*.js' -type f -exec node --check {} \\;",
+    "security:scan": "node scripts/secret-scan.js",
+    "build": "sh scripts/build-release.sh"
+  }
+}
